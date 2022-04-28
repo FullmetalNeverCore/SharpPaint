@@ -56,15 +56,11 @@ namespace WinFormsApp8
             bitmaps.Add(bitm);
             switch (mode)
             {
-                case EnumaratedModes.Spray:
-                    for (int i = 0; i < 100; ++i)
-                    {
-                        double theta = rand.NextDouble() * (Math.PI * 2);
-                        double r = rand.NextDouble() * SprayRadius;
-                        double x = e.X + Math.Cos(theta) * r;
-                        double y = e.Y + Math.Sin(theta) * r;
-                        graphics.DrawEllipse(pen, new Rectangle((int)x - 1, (int)y - 1, 1, 1));
-                    }
+                case EnumaratedModes.Line:
+                    endPoint = new Point(e.X, e.Y);
+                    textBox3.Text = "Mouse";
+                    ControlPaint.DrawReversibleLine(pictureBox1.PointToScreen(startPoint), pictureBox1.PointToScreen(endPoint), Color.Black);
+                    ControlPaint.DrawReversibleLine(pictureBox1.PointToScreen(startPoint), pictureBox1.PointToScreen(endPoint), Color.Black);
                     break;
             }
         }
@@ -77,7 +73,7 @@ namespace WinFormsApp8
                 switch (mode)
                 {
                     case EnumaratedModes.Pen:
-                        p2 = e.Location;
+                        p2 = e.Location; 
                         graphics.DrawLine(pen, p2, p1);
                         p1 = p2;
                         break;
@@ -94,13 +90,31 @@ namespace WinFormsApp8
                         break;
                     case EnumaratedModes.Eraser:
                         p2 = e.Location;
-                        pen.Color = Color.White;
+                        pen.Color = (mode == EnumaratedModes.Eraser) ? Color.White : Color.Black;
                         graphics.DrawLine(pen, p2, p1);
                         p1 = p2;
+                        pen.Color = Color.Black;
                         break;
                     case EnumaratedModes.Line:
                         endPoint = new Point(e.X, e.Y);
                         ControlPaint.DrawReversibleLine(pictureBox1.PointToScreen(startPoint), pictureBox1.PointToScreen(endPoint), Color.Black);
+                        ControlPaint.DrawReversibleLine(pictureBox1.PointToScreen(startPoint), pictureBox1.PointToScreen(endPoint), Color.Black);
+                        break;
+                    case EnumaratedModes.Spray:
+                        for (int i = 0; i < 100; ++i)
+                        {
+                            double theta = rand.NextDouble() * (Math.PI * 2);
+                            double r = rand.NextDouble() * SprayRadius;
+                            double x = e.X + Math.Cos(theta) * r;
+                            double y = e.Y + Math.Sin(theta) * r;
+                            graphics.DrawEllipse(pen, new Rectangle((int)x - 1, (int)y - 1, 1, 1));
+                        }
+                        break;
+                    case EnumaratedModes.Rectangle:
+                        gx = x - zx;
+                        gy = y - zy;
+                        Rectangle rect = new Rectangle(zx, zy, gx, gy);
+                        ControlPaint.DrawReversibleFrame(pictureBox1.RectangleToScreen(rect), Color.Black, FrameStyle.Dashed);
                         break;
                 }
             }
@@ -108,8 +122,6 @@ namespace WinFormsApp8
             y = e.Y;
             gx = e.X - zx;
             gy = e.Y - zy;
-            textBox2.Text = e.X.ToString();
-            textBox3.Text = e.Y.ToString();
             pictureBox1.Refresh();
         }
 
@@ -117,18 +129,32 @@ namespace WinFormsApp8
         {
             pen.Width = thickness;
             gx = x - zx;
-            gy = y - zy;  
+            gy = y - zy;
+            textBox2.Text = zx.ToString();
+            textBox3.Text = zy.ToString();
             endPoint = new Point(e.X, e.Y);
             p = false;
             switch (mode)
             {
                 case EnumaratedModes.Rectangle:
-                    if((gx < 0) && (gy < 0))
+                    if ((gx < 0) && (gy > 0))
                     {
+                        textBox3.Text = "Scen1";
+                        graphics.DrawRectangle(pen, zx, zy, -gx, gy);
+                    }
+                    else if((gy < 0) && (gx > 0))
+                    {
+                        textBox3.Text = "Scen2";
+                        graphics.DrawRectangle(pen, zx, zy, gx, -gy);
+                    }
+                    else if((gx < 0) && (gy < 0))
+                    {
+                        textBox3.Text = "Scen3";
                         graphics.DrawRectangle(pen, zx, zy, -gx, -gy);
                     }
                     else
                     {
+                        textBox3.Text = "Scen4";
                         graphics.DrawRectangle(pen, zx, zy, gx, gy);
                     }
                     break;
@@ -270,6 +296,17 @@ namespace WinFormsApp8
         {
             try { SprayRadius = Convert.ToInt32(textBox4.Text); }
             catch { SprayRadius = 15; }
+        }
+
+        private void pictureBox1_MouseHover(object sender, EventArgs e)
+        {
+            switch (mode)
+            {
+                case EnumaratedModes.Line:
+                    ControlPaint.DrawReversibleLine(pictureBox1.PointToScreen(startPoint), pictureBox1.PointToScreen(endPoint), Color.Black);
+                    ControlPaint.DrawReversibleLine(pictureBox1.PointToScreen(startPoint), pictureBox1.PointToScreen(endPoint), Color.Black);
+                    break;
+            }
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
